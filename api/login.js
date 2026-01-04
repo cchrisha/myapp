@@ -1,42 +1,37 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { connectToDB } from '../db.js';
+import { connectToDB } from '../../db.js';
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST')
-    return res.status(405).json({ message: 'Method not allowed' });
+  if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
 
   const { name, password } = req.body;
-
-  if (!name || !password)
-    return res.status(400).json({ message: 'Missing name or password' });
+  if (!name || !password) return res.status(400).json({ message: 'Kulang ang ibinigay na impormasyon.' });
 
   try {
     const db = await connectToDB();
     const user = await db.collection('users').findOne({ name });
 
-    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!user) return res.status(401).json({ message: 'Walang natagpuang account.' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!isMatch) return res.status(401).json({ message: 'Mali ang password.' });
 
     // JWT without expiration
-    const token = jwt.sign(
-      { id: user._id, name: user.name },
-      process.env.JWT_SECRET
-    );
+    const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET);
 
     res.status(200).json({
-      message: 'Login successful',
+      message: 'Matagumpay kang naka-login!',
       token,
       user: {
+        userId: user._id,
         name: user.name,
-        age: user.age,
-        grade_section: user.grade_section,
-      },
+        points: user.points,
+        unlockedLevel: user.unlocked_level
+      }
     });
   } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ message: 'Server error' });
+    console.error(err);
+    res.status(500).json({ message: 'Nagkaroon ng problema sa server.' });
   }
 }
