@@ -7,33 +7,36 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method not allowed' });
 
   const { name, password } = req.body;
+
   if (!name || !password)
-    return res.status(400).json({ message: 'Kulang ang ibinigay na impormasyon.' });
+    return res.status(400).json({ message: 'Missing name or password' });
 
   try {
     const db = await connectToDB();
     const user = await db.collection('users').findOne({ name });
 
-    if (!user) return res.status(401).json({ message: 'Walang natagpuang account.' });
+    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Mali ang password.' });
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    // JWT WITHOUT EXPIRATION
-    const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET);
+    // JWT without expiration
+    const token = jwt.sign(
+      { id: user._id, name: user.name },
+      process.env.JWT_SECRET
+    );
 
     res.status(200).json({
-      message: 'Matagumpay kang naka-login!',
+      message: 'Login successful',
       token,
       user: {
-        userId: user._id,
         name: user.name,
-        points: user.points,
-        unlockedLevel: user.unlocked_level
-      }
+        age: user.age,
+        grade_section: user.grade_section,
+      },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Nagkaroon ng problema sa server.' });
+    console.error("Login error:", err);
+    res.status(500).json({ message: 'Server error' });
   }
 }
