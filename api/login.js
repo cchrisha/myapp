@@ -24,8 +24,8 @@ export default async function handler(req, res) {
       user: {
         userId: user._id,
         name: user.name,
-        points: user.points,
-        unlockedLevel: user.unlocked_level
+        // points: user.points,
+        // unlockedLevel: user.unlocked_level
       }
     });
   } catch (err) {

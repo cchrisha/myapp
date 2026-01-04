@@ -20,8 +20,8 @@ export default async function handler(req, res) {
       age,
       grade_section,
       password: hashedPassword,
-      points: 0,
-      unlocked_level: 1
+      // points: 0,
+      // unlocked_level: 1
     });
 
     res.status(201).json({ message: 'Matagumpay kang nakapagrehistro!', userId: result.insertedId });
