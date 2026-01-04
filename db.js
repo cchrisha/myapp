@@ -20,6 +20,6 @@ if (process.env.NODE_ENV === 'development') {
 
 export async function connectToDB() {
   const client = await clientPromise;
-  const db = client.db(process.env.DB_NAME || 'gameDB');
+  const db = client.db(process.env.DB_NAME || 'myapp');
   return db;
 }
