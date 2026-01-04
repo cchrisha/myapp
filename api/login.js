@@ -33,6 +33,8 @@ export default async function handler(req, res) {
         name: user.name,
         age: user.age,
         grade_section: user.grade_section,
+        points: user.points ?? 0,
+        ßunlocked_level: user.unlocked_level ?? 1
       },
     });
   } catch (err) {
