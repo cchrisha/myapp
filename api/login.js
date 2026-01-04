@@ -11,13 +11,11 @@ export default async function handler(req, res) {
   try {
     const db = await connectToDB();
     const user = await db.collection('users').findOne({ name });
-
     if (!user) return res.status(401).json({ message: 'Walang natagpuang account.' });
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(401).json({ message: 'Mali ang password.' });
 
-    // JWT without expiration
     const token = jwt.sign({ id: user._id, name: user.name }, process.env.JWT_SECRET);
 
     res.status(200).json({

@@ -11,7 +11,6 @@ export default async function handler(req, res) {
   try {
     const db = await connectToDB();
     const existingUser = await db.collection('users').findOne({ name });
-
     if (existingUser) return res.status(400).json({ message: 'May nakarehistrong pangalan na gamit na.' });
 
     const hashedPassword = await bcrypt.hash(password, 10);

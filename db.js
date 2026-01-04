@@ -8,15 +8,13 @@ if (!process.env.MONGODB_URI) {
 }
 
 if (process.env.NODE_ENV === 'development') {
-  // Prevent multiple connections in dev
   if (!global._mongoClientPromise) {
-    client = new MongoClient(process.env.MONGODB_URI);
+    client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
     global._mongoClientPromise = client.connect();
   }
   clientPromise = global._mongoClientPromise;
 } else {
-  // Production
-  client = new MongoClient(process.env.MONGODB_URI);
+  client = new MongoClient(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   clientPromise = client.connect();
 }
 
