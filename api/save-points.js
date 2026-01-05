@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     const db = await connectToDB();
 
     await db.collection('users').updateOne(
-      { _id: new ObjectId(userId) },    // <<< FIX
+      { _id: new ObjectId(userId) },
       { $set: { points } }
     );
 
