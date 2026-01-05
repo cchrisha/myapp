@@ -1,4 +1,5 @@
 import { connectToDB } from '../db.js';
+import { ObjectId } from 'mongodb';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST')
@@ -13,7 +14,7 @@ export default async function handler(req, res) {
     const db = await connectToDB();
 
     await db.collection('users').updateOne(
-      { _id: userId },
+      { _id: new ObjectId(userId) },     // <<< FIX
       { $set: { unlocked_level: unlockedLevel } }
     );
 
