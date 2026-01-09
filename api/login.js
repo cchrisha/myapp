@@ -33,14 +33,12 @@ export default async function handler(req, res) {
 res.status(200).json({
   message: 'Login successful',
   token,
-  user: {
     userId: user._id.toString(),  // <- add this
     name: user.name,
     age: user.age,
     grade_section: user.grade_section,
     points: user.points ?? 0,
     unlocked_level: user.unlocked_level ?? 1
-  },
 });
 
 
