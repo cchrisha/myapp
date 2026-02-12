@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST')
     return res.status(405).json({ message: 'Method not allowed' });
 
-  const { userId, amount } = req.body; // amount instead of points
+  const { userId, amount } = req.body;
 
   if (!userId || amount === undefined)
     return res.status(400).json({ message: 'Missing data' });
@@ -13,19 +13,27 @@ export default async function handler(req, res) {
   try {
     const db = await connectToDB();
 
-    const result = await db.collection('users').findOneAndUpdate(
+    // 1️⃣ Update
+    await db.collection('users').updateOne(
       { _id: new ObjectId(userId) },
-      { $inc: { points: amount } },
-      { returnDocument: 'after' }
+      { $inc: { points: amount } }
     );
+
+    // 2️⃣ Fetch updated user
+    const updatedUser = await db.collection('users').findOne(
+      { _id: new ObjectId(userId) }
+    );
+
+    if (!updatedUser)
+      return res.status(404).json({ message: 'User not found' });
 
     res.json({
       message: 'Points updated successfully',
-      points: result.value.points
+      points: updatedUser.points ?? 0
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("UPDATE ERROR:", err);
     res.status(500).json({ message: 'Server error updating points' });
   }
 }
