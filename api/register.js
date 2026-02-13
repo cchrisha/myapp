@@ -27,8 +27,11 @@ export default async function handler(req, res) {
 
     const db = await connectToDB();
 
+    const cleanName = name.trim().toLowerCase();
+
+    // Check duplicate (case insensitive)
     const existingUser = await db.collection('users').findOne({
-      name: { $regex: `^${name}$`, $options: 'i' }
+      name: cleanName
     });
 
     if (existingUser) {
@@ -38,7 +41,7 @@ export default async function handler(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await db.collection('users').insertOne({
-      name: name.trim(),
+      name: cleanName,                     // ✅ stored lowercase
       age: Number(age),
       grade_section: grade_section.trim(),
       password: hashedPassword,
