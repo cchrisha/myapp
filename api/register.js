@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { connectToDB } from '../db.js';
 
 export default async function handler(req, res) {
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -13,36 +14,45 @@ export default async function handler(req, res) {
   if (req.method !== 'POST')
     return res.status(405).json({ message: 'Method not allowed' });
 
-  const { name, age, grade_section, password } = req.body;
-
-  // Validate required fields
-  if (!name || !age || !grade_section || !password) {
-    return res.status(400).json({ message: 'All fields are required' });
-  }
-
   try {
+    const { name, age, grade_section, password, confirmPassword } = req.body || {};
+
+    if (!name || !age || !grade_section || !password || !confirmPassword) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: 'Passwords do not match' });
+    }
+
     const db = await connectToDB();
 
-    // Check if name already exists
-    const existingUser = await db.collection('users').findOne({ name });
-    if (existingUser) return res.status(400).json({ message: 'Name already exists' });
+    const existingUser = await db.collection('users').findOne({
+      name: { $regex: `^${name}$`, $options: 'i' }
+    });
 
-    // Hash password
+    if (existingUser) {
+      return res.status(400).json({ message: 'Name already exists' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert user into DB
     const result = await db.collection('users').insertOne({
-      name,
-      age,
-      grade_section,
+      name: name.trim(),
+      age: Number(age),
+      grade_section: grade_section.trim(),
       password: hashedPassword,
       points: 0,
       unlocked_level: 1
     });
 
-    res.status(201).json({ message: 'User registered successfully', userId: result.insertedId });
+    return res.status(201).json({
+      message: 'User registered successfully',
+      userId: result.insertedId.toString()
+    });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
+    console.error("REGISTER ERROR:", err);
+    return res.status(500).json({ message: 'Server error' });
   }
 }
